@@ -800,3 +800,90 @@ Node Affinity	Permet d’exprimer des règles plus complexes (In, NotIn, Exists,
 Taints & Tolerations	Évite que des pods non désirés s'exécutent sur un nœud
 Pod Affinity/Anti-Affinity	Définit des relations entre les pods (ex: éviter d’avoir deux pods critiques sur le même nœud)
 
+### **Rôle du Scheduler dans Kubernetes et OpenShift**
+
+Le **Scheduler** dans Kubernetes (et OpenShift) est un composant essentiel qui détermine sur quel **nœud** un **pod** doit être déployé. Il prend des décisions en fonction des **ressources disponibles** (CPU, mémoire, stockage) et des **affinités** (comme les labels de nœuds ou les préférences de placement).
+
+Le rôle principal du Scheduler est donc de garantir que les pods soient affectés à des nœuds spécifiques en tenant compte des **conditions d’équilibre** entre les ressources et des **règles de placement** définies par l'utilisateur.
+
+---
+
+## **1. Fonctionnement du Scheduler**
+
+Lorsqu’un pod est créé, il passe par différentes étapes avant d'être exécuté :
+
+1. **Filtrage** : Le Scheduler commence par filtrer les nœuds qui ne satisfont pas aux exigences du pod, comme des ressources insuffisantes (mémoire, CPU) ou des contraintes de **taints** et **tolerations**.
+  
+2. **Scoring** : Après le filtrage, il évalue les nœuds restants en fonction de **critères de score** tels que :
+   - Disponibilité des ressources
+   - Affinité de nœud
+   - **Pod Affinity/Anti-Affinity** (relations entre les pods)
+   - **Node Affinity** (affinité avec des nœuds spécifiques)
+   - Proximité des ressources (ex: NUMA, GPU)
+
+3. **Placement** : Après avoir effectué le **scoring**, le Scheduler choisit le nœud avec le meilleur score et y place le pod.
+
+---
+
+## **2. Tableau des Fonctions du Scheduler**
+
+| **Fonction**                       | **Description**                                                                                                                                                          | **Exemple** |
+|------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| **Filtrage**                       | Élimine les nœuds qui ne peuvent pas exécuter le pod (en raison de ressources insuffisantes, de taints non tolérés, etc.).                                               | **CPU/Mémoire insuffisants**, **Taints non tolérés** |
+| **Scoring des nœuds**              | Évalue les nœuds en fonction de critères tels que la disponibilité des ressources, l'affinité des pods, la topologie NUMA, etc.                                         | **Meilleur nœud pour la topologie NUMA** |
+| **Affinité et Anti-affinité**      | Permet de spécifier des règles concernant la relation entre les pods et les nœuds (ex: placer deux pods similaires sur des nœuds différents, ou les mêmes nœuds).       | **Pod Affinity** : Placer un pod avec un autre pod |
+| **Node Affinity**                  | Spécifie les règles de placement d’un pod sur un nœud particulier en fonction des labels des nœuds.                                                                     | **Placer sur nœud ayant un label spécifique** |
+| **Taints et Tolerations**          | Le Scheduler vérifie si un pod peut tolérer les taints appliqués sur un nœud. Les taints repoussent certains pods d’un nœud, mais les **tolerations** les autorisent à y être. | **Tolerer un taint** pour un placement particulier |
+| **Resource Requests et Limits**    | Le Scheduler prend en compte les **ressources demandées** et **limitées** par les pods pour s'assurer que les nœuds aient les ressources nécessaires pour le pod.         | **Demander 2 CPU, 4Gi de RAM** |
+| **Proximité des ressources**       | Le Scheduler peut optimiser le placement en fonction de la **proximité des ressources** comme les GPU, les disques ou les réseaux.                                        | **Placer un pod proche d’un GPU ou d’un périphérique spécifique** |
+| **Affinité de Topologie (NUMA)**   | Dans des systèmes multi-sockets, il optimise l'affectation des pods pour éviter les cross-NUMA et améliorer les performances.                                              | **Placer un pod sur un nœud NUMA spécifique** |
+| **Pod Priority**                   | Le Scheduler peut attribuer des priorités aux pods pour déterminer l’ordre dans lequel ils sont placés sur les nœuds lorsque les ressources sont insuffisantes.           | **Priorité haute pour les pods critiques** |
+
+---
+
+## **3. Configuration du Scheduler dans OpenShift**
+
+OpenShift permet de personnaliser le Scheduler par **MachineConfig** ou via la création de **SchedulerProfiles**. Par exemple :
+
+### **A. Créer un SchedulerProfile personnalisé**
+```yaml
+apiVersion: operator.openshift.io/v1
+kind: Scheduler
+metadata:
+  name: custom-scheduler
+spec:
+  policy:
+    apiVersion: v1
+    kind: Policy
+    bindings:
+    - name: custom-scheduler-policy
+      weight: 100
+      rules:
+        - host: "worker-node1"
+          schedulerName: "custom-scheduler"
+```
+
+### **B. Application d’une Affinité de Nœud**
+Dans OpenShift, vous pouvez appliquer un **Node Affinity** dans les spécifications des pods :
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+spec:
+  nodeSelector:
+    disktype: ssd  # Le pod sera affecté uniquement sur les nœuds avec ce label
+  containers:
+  - name: nginx
+    image: nginx
+```
+
+---
+
+## **4. Conclusion**
+
+Le **Scheduler** de Kubernetes/OpenShift joue un rôle crucial dans l’affectation optimale des ressources d'un cluster. Il prend en compte une série de règles, critères de filtrage, et logiques de scoring afin de garantir que les pods sont correctement positionnés pour maximiser l'efficacité et la performance des applications.
+
+Le tableau résume bien toutes les fonctions disponibles, que tu souhaites utiliser dans OpenShift pour affiner l’allocation des ressources, comme **Node Affinity**, **Taints & Tolerations**, et **Pod Affinity**. 
+
+
