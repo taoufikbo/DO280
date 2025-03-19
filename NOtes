@@ -759,3 +759,44 @@ maxPods: 110
 Conclusion
 OpenShift gère automatiquement ces configurations via MachineConfig, alors que Kubernetes Vanilla nécessite des outils externes comme Ansible, Helm, DaemonSets ou kubeadm.
 Si tu veux une gestion similaire dans Kubernetes Vanilla, tu peux utiliser Cluster API pour automatiser la configuration des nœuds, mais cela demande plus d’efforts qu’OpenShift.
+
+
+Node Selector dans Kubernetes
+Le Node Selector est un mécanisme utilisé pour contraindre l'exécution d'un pod sur des nœuds spécifiques en fonction de leurs labels. C'est une solution simple pour influencer le placement des pods sur un cluster.
+
+1. Principe de fonctionnement
+Chaque nœud dans Kubernetes possède des labels, qui sont des paires clé-valeur.
+Exemple de labels sur un nœud :
+
+shell
+Copier
+Modifier
+kubectl label nodes worker-node1 disktype=ssd
+Ce label disktype=ssd pourra être utilisé par un Node Selector.
+
+2. Exemple de Node Selector
+Forcer un pod à s’exécuter sur un nœud avec un SSD
+yaml
+Copier
+Modifier
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+spec:
+  nodeSelector:
+    disktype: ssd  # Le pod ne s'exécutera que sur les nœuds ayant ce label
+  containers:
+  - name: my-container
+    image: nginx
+🔹 Si aucun nœud ne correspond, le pod restera en attente (Pending).
+
+3. Limitations du Node Selector
+Pas de logique avancée : On ne peut pas exprimer des conditions complexes (AND, OR, NOT).
+Pas de fallback : Si aucun nœud ne correspond, Kubernetes ne tente pas d'exécuter le pod ailleurs.
+4. Alternatives plus avancées
+Méthode	Description
+Node Affinity	Permet d’exprimer des règles plus complexes (In, NotIn, Exists, DoesNotExist)
+Taints & Tolerations	Évite que des pods non désirés s'exécutent sur un nœud
+Pod Affinity/Anti-Affinity	Définit des relations entre les pods (ex: éviter d’avoir deux pods critiques sur le même nœud)
+
