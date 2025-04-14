@@ -1,3 +1,21 @@
+
+# 🧾 Notes de formation DO280 – OpenShift
+
+## 📚 Sommaire
+
+1. [Types de nœuds dans OpenShift](#1-types-de-nœuds-dans-openshift)  
+2. [Configuration DNS dans OpenShift](#2-configuration-dns-requise-dans-openshift)  
+3. [Notion de Tenant et Multi-Tenancy](#3-🔹-notion-de-tenant-dans-openshift)  
+4. [Architecture d’un opérateur OpenShift/Kubernetes avec CRD](#4-🔹-architecture-dun-opérateur-openshiftkubernetes-avec-crd)  
+5. [Types d’utilisateurs dans Kubernetes](#5-🔹-types-dutilisateurs-dans-kubernetes)  
+6. [Connexion à l’API OpenShift (diagramme de séquence)](#6-🔹-diagramme-de-séquence--connexion-à-lapi-openshift)  
+7. [MachineConfig, MCP, MachineSet – OpenShift 4](#7-machineconfig-machineconfigpool-et-machineset)  
+8. [Tableau des rôles des MachineConfigs](#8-tableau-des-rôles-des-machineconfigs)  
+9. [Équivalent dans Kubernetes Vanilla](#9-équivalent-dans-kubernetes-vanilla)  
+10. [Node Selector & Scheduling](#10-node-selector-dans-kubernetes--scheduler)
+
+---
+
 Objectif de la formation 
 
 
@@ -885,5 +903,3 @@ spec:
 Le **Scheduler** de Kubernetes/OpenShift joue un rôle crucial dans l’affectation optimale des ressources d'un cluster. Il prend en compte une série de règles, critères de filtrage, et logiques de scoring afin de garantir que les pods sont correctement positionnés pour maximiser l'efficacité et la performance des applications.
 
 Le tableau résume bien toutes les fonctions disponibles, que tu souhaites utiliser dans OpenShift pour affiner l’allocation des ressources, comme **Node Affinity**, **Taints & Tolerations**, et **Pod Affinity**. 
-
-
